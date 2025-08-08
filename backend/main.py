@@ -1,34 +1,35 @@
-from fastapi import FastAPI
-from fastapi import FastAPI, Depends, HTTPException, Header, status,Security
+from fastapi import FastAPI, Depends, HTTPException, Header, status, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from fastapi.middleware.cors import CORSMiddleware
-
+from pydantic import BaseModel
 security = HTTPBearer()
-
 SECRET_KEY = "secret"
 ALGORITHM = "HS256"
-
 fake_users = {"alice": "password123", "bob": "secret"}
-
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Reactなどのフロントエンドのオリジン
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["*"],  # または ["GET", "POST", "PUT", "DELETE"] など必要なメソッドのみ
-    allow_headers=["*"],  # または ["Authorization", "Content-Type"] など必要なヘッダーのみ
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 @app.post("/login")
-def login(username: str, password: str):
-    if fake_users.get(username) != password:
+def login(request: LoginRequest):
+    if fake_users.get(request.username) != request.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = jwt.encode({"sub": username, "exp": datetime.utcnow() + timedelta(hours=1)}, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(
+        {"sub": request.username, "exp": datetime.utcnow() + timedelta(hours=1)},
+        SECRET_KEY,
+        algorithm=ALGORITHM
+    )
     return {"access_token": token, "token_type": "bearer"}
 
 @app.get("/me")

@@ -1,0 +1,165 @@
+/* :root と body の基本設定 */
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f9;
+    /* 明るい背景色に変更 */
+}
+
+/* --- ここからが主な変更・追加箇所 --- */
+
+/* 白いカード型コンテナ */
+.container {
+    background: #fff;
+    color: #333;
+    /* コンテナ内の文字色を黒に */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    /* header-rightの基準点にする */
+    text-align: left;
+    /* コンテナ内は左揃えに */
+}
+
+h1 {
+    text-align: center;
+    color: #4a4a4a;
+    margin-top: 0;
+    /* ヘッダーとの余白調整 */
+}
+
+/* ログイン情報（ヘッダー） */
+.header-right {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.logout-btn {
+    font-size: 0.8em;
+    padding: 0.3em 0.8em;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    color: #333;
+}
+
+.logout-btn:hover {
+    background-color: #ddd;
+    border-color: #ccc;
+}
+
+
+/* タスク追加フォーム */
+.todo-form {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.todo-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+}
+
+.todo-input:focus {
+    outline: none;
+    border-color: #5b9dd9;
+}
+
+
+/* タスクリスト */
+.todo-list {
+    list-style: none;
+    /* デフォルトの黒丸を消す */
+    padding: 0;
+    margin: 0;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* これで両端揃えになる */
+    padding: 12px 5px;
+    border-bottom: 1px solid #eee;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item span {
+    cursor: pointer;
+}
+
+/* 完了タスクのスタイル */
+.task-item.completed span {
+    text-decoration: line-through;
+    color: #aaa;
+}
+
+
+/* 汎用ボタンと削除ボタンのスタイル */
+/* 汎用追加ボタン */
+.todo-form button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #5b9dd9;
+    color: white;
+    font-size: 16px;
+    border-radius: 4px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.todo-form button:hover {
+    background-color: #4a8dcf;
+}
+
+/* 削除ボタン */
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+/* ボタン無効時のスタイル */
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

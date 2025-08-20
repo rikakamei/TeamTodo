@@ -2,7 +2,7 @@ import { json, LoaderFunction, LoaderFunctionArgs, MetaFunction, ActionFunctionA
 import { useLoaderData, useNavigation, useFetcher } from "@remix-run/react";
 import { Form } from "@remix-run/react";
 import { logout, requireUserSession } from "~/lib/auth.server";
-import { createTask, deleteTask, getTasks } from "~/lib/api.server";
+import { createTask, deleteTask, getTasks, getCurrentUser } from "~/lib/api.server";
 
 //どんなページなのか
 export const meta:MetaFunction=()=>{
@@ -12,17 +12,24 @@ export const meta:MetaFunction=()=>{
     ]
 }
 
-export async function loader({request}: LoaderFunctionArgs ){
+export async function loader({ request }: LoaderFunctionArgs)
+{
     const token = await requireUserSession(request);
-    try{
-        const tasks = await getTasks(token);
-        return json({ tasks });
+    try
+    {
+        // Promise.allで、タスク取得とユーザー取得を同時に実行
+        const [tasks, user] = await Promise.all([
+            getTasks(token),
+            getCurrentUser(token),
+        ]);
+        return json({ tasks, user });
     } catch (error)
     {
-        console.error("Failed to load tasks:", error);
-        return json({ tasks: [] });
+        console.error("Failed to load data:", error);
+        // エラー時はユーザー情報もnullにするなど、適宜ハンドリング
+        return json({ tasks: [], user: null });
     }
-};
+  }
 
 export async function action({ request }: ActionFunctionArgs){
     const token = await requireUserSession(request);
@@ -68,7 +75,7 @@ export async function action({ request }: ActionFunctionArgs){
 
 export default function TasksIndex()
 {
-    const { tasks } = useLoaderData<typeof loader>();
+    const { tasks, user } = useLoaderData<typeof loader>();
     const navigation = useNavigation();
     const deleteFetcher = useFetcher();
 
@@ -80,7 +87,11 @@ export default function TasksIndex()
 
             {/* ヘッダーはコンテナの右上に配置するので、このままでOK */}
             <div className="header-right">
-                <p>ログイン中です</p>
+                {user ? (
+                    <p>{user.username} さんとしてログイン中</p>
+                ) : (
+                    <p>ログイン中です</p>
+                )}
                 <Form method="post">
                     <input type="hidden" name="intent" value="logout" />
                     {/* ログアウトボタンにもクラスを追加 */}
@@ -108,28 +119,30 @@ export default function TasksIndex()
                     // ulにclassNameを追加
                     <ul className="todo-list">
                         {tasks.map((task) => (
-                            // task.completed のような完了状態を持つ想定でclassNameを動的に変更
-                            <li
-                                className="task-item"
-                                key={task.id}
-                            >
-                                <span>{task.title}</span>
-                                <deleteFetcher.Form method="post" style={{ display: 'inline' }}>
-                                    <input type="hidden" name="intent" value="delete" />
-                                    <input type="hidden" name="taskId" value={task.id} />
-                                    <button
-                                        type="submit"
-                                        // 削除ボタン専用のclassNameを追加
-                                        className="delete-btn"
-                                        disabled={
-                                            deleteFetcher.state === "submitting" &&
-                                            deleteFetcher.formData?.get("taskId") === task.id.toString()
-                                        }
-                                    >
-                                        削除
-                                    </button>
-                                </deleteFetcher.Form>
-                            </li>
+                            task ? (
+                                // task.completed のような完了状態を持つ想定でclassNameを動的に変更
+                                <li
+                                    className="task-item"
+                                    key={task.id}
+                                >
+                                    <span>{task.title}</span>
+                                    <deleteFetcher.Form method="post" style={{ display: 'inline' }}>
+                                        <input type="hidden" name="intent" value="delete" />
+                                        <input type="hidden" name="taskId" value={task.id} />
+                                        <button
+                                            type="submit"
+                                            // 削除ボタン専用のclassNameを追加
+                                            className="delete-btn"
+                                            disabled={
+                                                deleteFetcher.state === "submitting" &&
+                                                deleteFetcher.formData?.get("taskId") === task.id.toString()
+                                            }
+                                        >
+                                            削除
+                                        </button>
+                                    </deleteFetcher.Form>
+                                </li>
+                            ) : null
                         ))}
                     </ul>
                 )}
